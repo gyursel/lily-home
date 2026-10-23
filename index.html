@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>LILY HOME — Нашите моменти. Нашата история.</title>
+  <meta name="description" content="Луксозен интерактивен фотоалбум и кинематографичен портрет — нашите моменти, любов и семейни спомени." />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Google Fonts с пълна поддръжка на кирилица: Cormorant Garamond + Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css?v=5" />
+</head>
+<body>
+
+  <!-- ========================================================================
+       ПОСТОЯНЕН ВИДЕО ИСТОРИЯ СЛОЙ ПРИ СКРОЛВАНЕ (Приоритет 2)
+       Остава фиксиран зад всички секции и се трансформира плавно при скрол
+       ======================================================================== -->
+  <div class="cinematic-bg-layer" id="cinematicBgLayer" aria-hidden="true">
+    <!-- Твоето видео на цял екран като истинско кинематографично интро -->
+    <video
+      id="globalBgVideo"
+      class="global-bg-video intro-mode"
+      src="intro-film.mp4"
+      poster="intro-poster.jpg"
+      autoplay
+      muted
+      loop
+      playsinline
+    ></video>
+
+    <!-- Плаващи кинематографични спомени (активират се само надолу след интрото) -->
+    <div class="bg-memory-crossfade intro-hidden" id="bgMemoryCrossfade">
+      <div class="bg-memory-slide" id="bgSlideA"></div>
+      <div class="bg-memory-slide" id="bgSlideB"></div>
+    </div>
+
+    <!-- Многопластови градиенти за четливост на текста върху видеото -->
+    <div class="bg-vignette-overlay intro-mode" id="bgVignetteOverlay"></div>
+    <div class="bg-ambient-glow" id="bgAmbientGlow"></div>
+    <div class="bg-film-grain"></div>
+  </div>
+
+  <!-- Деликатен курсор за десктоп -->
+  <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+  <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
+
+  <!-- ========================================================================
+       НАВИГАЦИЯ (Компактна, с мобилно меню и контрол на движението)
+       ======================================================================== -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a href="#hero" class="brand-logo" aria-label="Начало">
+        <span class="brand-main" id="headerBrandName">LILY HOME</span>
+        <span class="brand-sub" id="headerSubBrand">Личен свят и семейни спомени</span>
+      </a>
+
+      <nav class="desktop-nav" aria-label="Основна навигация">
+        <a href="#hero" class="nav-link active">Начало</a>
+        <a href="#her-world" class="nav-link">Нейният свят</a>
+        <a href="#memories" class="nav-link">Албуми</a>
+        <a href="#gallery" class="nav-link">Галерия</a>
+        <a href="#our-family" class="nav-link">Нашето семейство</a>
+        <a href="#moments-motion" class="nav-link">В движение</a>
+        <a href="#favorites" class="nav-link">Любими</a>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Бутон за Елементарен Админ Панел за качване на снимки -->
+        <button
+          type="button"
+          class="admin-trigger-pill"
+          id="openAdminModalBtn"
+          title="Отвори панела за лесно качване на снимки в албумите"
+        >
+          <span class="admin-plus-icon">＋</span>
+          <span>Добави снимки</span>
+        </button>
+
+        <!-- Бутон за пауза/пускане на фоновото движение и видеото -->
+        <button
+          type="button"
+          class="control-pill"
+          id="motionToggleBtn"
+          aria-pressed="false"
+          title="Пауза или пускане на фоновото движение и видеото"
+        >
+          <span class="status-indicator" id="motionDot"></span>
+          <span class="control-label" id="motionLabel">Движение: Вкл.</span>
+        </button>
+
+        <!-- Бутон за звук от атмосферното видео -->
+        <button
+          type="button"
+          class="icon-circle-btn"
+          id="audioToggleBtn"
+          aria-label="Включи или изключи фоновия звук"
+          title="Атмосферен звук от видеото"
+        >
+          <svg id="iconSoundMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+          <svg id="iconSoundUnmuted" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+        </button>
+
+        <!-- Бутон за мобилно меню -->
+        <button
+          type="button"
+          class="mobile-menu-trigger"
+          id="mobileMenuOpenBtn"
+          aria-label="Отвори менюто"
+          aria-expanded="false"
+          aria-controls="mobileNavDrawer"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <line x1="3" y1="7" x2="21" y2="7"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="7" y1="17" x2="21" y2="17"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Мобилно чекмедже с голям видим бутон за затваряне -->
+  <aside class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
+    <div class="mobile-drawer-header">
+      <span class="brand-main">LILY HOME</span>
+      <button
+        type="button"
+        class="mobile-drawer-close"
+        id="mobileMenuCloseBtn"
+        aria-label="Затвори менюто"
+      >
+        <span>Затвори</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <nav class="mobile-drawer-links" aria-label="Мобилна навигация">
+      <a href="#hero" class="mobile-nav-link">Начало</a>
+      <a href="#her-world" class="mobile-nav-link">Нейният свят</a>
+      <a href="#memories" class="mobile-nav-link">Спомени през годините</a>
+      <a href="#gallery" class="mobile-nav-link">Пълна галерия (13 кадъра)</a>
+      <a href="#our-family" class="mobile-nav-link">Нашето семейство</a>
+      <a href="#moments-motion" class="mobile-nav-link">Моменти в движение</a>
+      <a href="#favorites" class="mobile-nav-link">Любими моменти</a>
+      <button type="button" class="mobile-admin-open-btn" id="mobileOpenAdminBtn">
+        ＋ Качи нови снимки (Админ панел)
+      </button>
+    </nav>
+    <div class="mobile-drawer-footer">
+      <p>Нашите моменти. Нашата история.</p>
+    </div>
+  </aside>
+  <div class="mobile-drawer-backdrop" id="mobileDrawerBackdrop"></div>
+
+  <!-- ========================================================================
+       A. НАЧАЛЕН КИНЕМАТОГРАФИЧЕН ЕКРАН (Hero Section)
+       ======================================================================== -->
+  <main id="mainContent">
+    <section class="hero-section story-chapter" id="hero" data-chapter="hero">
+      <div class="section-container hero-grid">
+        
+        <!-- Лява колона: Кинематографична типография и бутони -->
+        <div class="hero-text-col">
+          <div class="eyebrow-pill reveal-item">
+            <span class="sparkle-dot"></span>
+            <span id="heroEyebrow" contenteditable="true" spellcheck="false" data-edit-key="hero.eyebrow">
+              ЛИЧЕН АЛБУМ • КИНЕМАТОГРАФИЧЕН ПОРТРЕТ
+            </span>
+          </div>
+
+          <h1 class="hero-title reveal-item">
+            <span
+              class="editable-wife-name"
+              id="heroWifeName"
+              contenteditable="true"
+              spellcheck="false"
+              data-edit-key="wifeName"
+              title="Кликнете, за да редактирате името"
+            >Лили</span>
+            <span class="edit-badge" title="Кликнете върху името, за да го промените">✎ Редактирай име</span>
+          </h1>
+
+          <p class="hero-kicker reveal-item" id="heroSubtitle" contenteditable="true" spellcheck="false" data-edit-key="hero.subtitle">
+            Нашите моменти. Нашата история.
+          </p>
+
+          <!-- Синхронизирана плавна текстова анимация по 4-те сцени на твоето интро видео -->
+          <div class="intro-video-synced-stage reveal-item" id="introSyncedStage" aria-live="polite">
+            <div class="intro-scene-header">
+              <span class="intro-scene-num" id="introSceneNum">01</span>
+              <span class="intro-scene-line"></span>
+              <span class="intro-scene-eyebrow" id="introSceneEyebrow">УТРИННИ ОТРАЖЕНИЯ</span>
+            </div>
+            <h2 class="intro-scene-animated-text" id="introSceneTitle">
+              Тишината на споделените утрини
+            </h2>
+          </div>
+
+          <p class="hero-lead reveal-item" id="heroDescription" contenteditable="true" spellcheck="false" data-edit-key="hero.description">
+            Едно специално място, създадено с любов — събрало усмивките, топлината, пътуванията и миговете, които правят света ни истински.
+          </p>
+
+          <div class="hero-cta-group reveal-item">
+            <a href="#gallery" class="btn-luxury-primary" id="heroPrimaryBtn">
+              <span>Разгледай спомените</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+            <a href="#memories" class="btn-luxury-secondary" id="heroSecondaryBtn" data-open-album="family">
+              <span>Семейният ни албум</span>
+            </a>
+          </div>
+
+          <!-- Интерактивен таймлайн за 4-те сцени от твоето интро видео (00:00 - 00:10) -->
+          <div class="intro-video-timeline reveal-item" aria-label="Сцени от интро видеото">
+            <button type="button" class="intro-step active" data-intro-scene="0">
+              <div class="intro-step-top">
+                <span class="intro-step-idx">01</span>
+                <span class="intro-step-label">Отражения</span>
+              </div>
+              <div class="intro-step-bar"><div class="intro-step-fill" id="introFill0"></div></div>
+            </button>
+            <button type="button" class="intro-step" data-intro-scene="1">
+              <div class="intro-step-top">
+                <span class="intro-step-idx">02</span>
+                <span class="intro-step-label">Топла вечер</span>
+              </div>
+              <div class="intro-step-bar"><div class="intro-step-fill" id="introFill1"></div></div>
+            </button>
+            <button type="button" class="intro-step" data-intro-scene="2">
+              <div class="intro-step-top">
+                <span class="intro-step-idx">03</span>
+                <span class="intro-step-label">Морски бриз</span>
+              </div>
+              <div class="intro-step-bar"><div class="intro-step-fill" id="introFill2"></div></div>
+            </button>
+            <button type="button" class="intro-step" data-intro-scene="3">
+              <div class="intro-step-top">
+                <span class="intro-step-idx">04</span>
+                <span class="intro-step-label">Звездна нощ</span>
+              </div>
+              <div class="intro-step-bar"><div class="intro-step-fill" id="introFill3"></div></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Дясна колона: Плаваща 3D портретна композиция -->
+        <div class="hero-visual-col reveal-item">
+          <div class="hero-3d-stage" id="hero3dStage" data-tilt-card>
+            <div class="floating-aura"></div>
+            <div class="hero-frame-main" id="heroFeaturedFrame">
+              <img
+                src="facebook_1792763701295_7519395963396826105.jpg"
+                alt="Портрет на съпругата ми"
+                id="heroFeaturedImg"
+                style="object-position: 50% 28%;"
+              />
+              <div class="frame-shine"></div>
+              <div class="hero-frame-caption">
+                <span class="caption-tag">Портрет</span>
+                <span class="caption-text">Светлината на нашия дом</span>
+              </div>
+            </div>
+
+            <!-- Допълнителен плаващ 3D мини-кадър за истинска дълбочина -->
+            <div class="hero-frame-floating" id="heroFloatingMini">
+              <img
+                src="IMG_20260316_215016.jpg"
+                alt="Семеен спомен заедно"
+                style="object-position: 50% 62%;"
+              />
+              <span class="mini-label">Заедно ♥</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Деликатен индикатор за скролване -->
+      <a href="#her-world" class="scroll-indicator" aria-label="Скролни надолу">
+        <span class="scroll-text">Плъзни надолу към нашата история</span>
+        <span class="scroll-mouse">
+          <span class="scroll-wheel"></span>
+        </span>
+      </a>
+    </section>
+
+    <!-- ========================================================================
+         B. „НЕЙНИЯТ СВЯТ“ — Голям портрет + Интерактивен текстов скенер + Личен текст
+         ======================================================================== -->
+    <section class="her-world-section story-chapter" id="her-world" data-chapter="her-world">
+      <div class="section-container">
+        <div class="her-world-grid">
+          
+          <!-- Лява част: Голям портрет с 3D дълбочина и опция за Текстов Портрет LILY HOME -->
+          <div class="her-portrait-showcase reveal-on-scroll">
+            <div class="portrait-mode-pills" role="group" aria-label="Режим на портрета">
+              <button type="button" class="pmode-pill active" data-pmode="photo">Оригинален портрет</button>
+              <button type="button" class="pmode-pill" data-pmode="split">Интерактивен скенер</button>
+              <button type="button" class="pmode-pill" data-pmode="typo">Текстов портрет</button>
+            </div>
+
+            <div class="portrait-interactive-card" id="portraitStage" data-mode="photo">
+              <img
+                src="facebook_1792763701295_7519395963396826105.jpg"
+                id="founderSourceImg"
+                class="portrait-photo-layer"
+                alt="Портрет в секция Нейният свят"
+                style="object-position: 50% 25%;"
+              />
+              <canvas id="typoPortraitCanvas" class="portrait-typo-canvas"></canvas>
+
+              <div class="portrait-scanner-line" id="portraitScannerLine">
+                <span class="scanner-handle">LILY</span>
+              </div>
+
+              <button
+                type="button"
+                class="portrait-expand-btn"
+                data-lightbox-id="photo-13"
+                aria-label="Отвори портрета на цял екран"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <polyline points="9 21 3 21 3 15"></polyline>
+                  <line x1="21" y1="3" x2="14" y2="10"></line>
+                  <line x1="3" y1="21" x2="10" y2="14"></line>
+                </svg>
+                <span>Голям екран</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Дясна част: Редактируем личен текст и вторични плаващи портрети -->
+          <div class="her-story-content reveal-on-scroll">
+            <span class="section-eyebrow" id="herWorldTag" contenteditable="true" spellcheck="false" data-edit-key="herWorld.sectionTag">
+              НЕЙНИЯТ СВЯТ
+            </span>
+
+            <h2 class="section-title" id="herWorldHeading" contenteditable="true" spellcheck="false" data-edit-key="herWorld.heading">
+              Нежност, стил и светлина във всеки поглед
+            </h2>
+
+            <blockquote class="luxury-quote" id="herWorldQuote" contenteditable="true" spellcheck="false" data-edit-key="herWorld.quote">
+              „Най-красивите места на света са онези, в които се усмихваш до мен.“
+            </blockquote>
+
+            <p class="story-paragraph" id="herWorldP1" contenteditable="true" spellcheck="false" data-edit-key="herWorld.storyParagraph1">
+              Този интерактивен портрет е посветен на жената, която превръща всеки ден в празник на топлината и красотата. Тук всеки кадър носи своята емоция — от тихите сутрини и слънчевите брегове до уютните вечери у дома.
+            </p>
+
+            <p class="story-paragraph muted-note" id="herWorldP2" contenteditable="true" spellcheck="false" data-edit-key="herWorld.storyParagraph2">
+              Кликнете върху всяко заглавие или текст със символ за редакция, за да добавите свое лично послание, спомен или посвещение — промените се запазват автоматично във Вашия браузър.
+            </p>
+
+            <!-- Мини 3D триптих от нейни портрети -->
+            <div class="her-mini-triptych">
+              <figure class="mini-polaroid" data-tilt-card data-lightbox-id="photo-09">
+                <img src="IMG_20260921_185332.jpg" alt="Вечерен портрет" loading="lazy" style="object-position: 55% 38%;" />
+                <figcaption>Нежност у дома</figcaption>
+              </figure>
+              <figure class="mini-polaroid" data-tilt-card data-lightbox-id="photo-02">
+                <img src="IMG-2afc162df3b815c9577819f7af3ad8b2-V.jpg" alt="По пътя" loading="lazy" style="object-position: 55% 36%;" />
+                <figcaption>На път с усмивка</figcaption>
+              </figure>
+              <figure class="mini-polaroid" data-tilt-card data-lightbox-id="photo-06">
+                <img src="IMG-e6193a37cb46978ff36df2774c22b714-V.jpg" alt="Близък портрет" loading="lazy" style="object-position: 52% 38%;" />
+                <figcaption>Искреност</figcaption>
+              </figure>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         C. „СПОМЕНИ ПРЕЗ ГОДИНИТЕ“ — Интерактивни 3D Албуми и Бутони + Адаптивна Галерия
+         ======================================================================== -->
+    <section class="memories-section story-chapter" id="memories" data-chapter="memories">
+      <div class="section-container">
+        
+        <div class="section-header-center reveal-on-scroll">
+          <span class="section-eyebrow">СПОМЕНИ ПРЕЗ ГОДИНИТЕ</span>
+          <h2 class="section-title">Нашите албуми и колекции</h2>
+          <p class="section-subtitle">
+            Изберете албум или комбинирайте година и категория. Всяка карта реагира с плавен 3D наклон и светлинен акцент.
+          </p>
+        </div>
+
+        <!-- 3D Интерактивни Карти на Албумите (Приоритет 3) -->
+        <div class="albums-cards-grid reveal-on-scroll" id="albumsCardsGrid" role="region" aria-label="Колекции от албуми">
+          <!-- Генерират се динамично от config.js -->
+        </div>
+
+        <!-- Комбинирана филтърна лента (Години + Категории работят заедно) -->
+        <div class="combined-filters-bar reveal-on-scroll" id="gallery">
+          <div class="filter-group">
+            <span class="filter-group-label">Година:</span>
+            <div class="filter-pills-row" id="yearFilterPills" role="group" aria-label="Филтър по година">
+              <button type="button" class="filter-pill active" data-year="all">Всички години</button>
+              <button type="button" class="filter-pill" data-year="2026">Снимки 2026</button>
+              <button type="button" class="filter-pill" data-year="2025">Снимки 2025</button>
+              <button type="button" class="filter-pill" data-year="2024">Снимки 2024</button>
+              <button type="button" class="filter-pill" data-year="unspecified">Без посочена година</button>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <span class="filter-group-label">Категория:</span>
+            <div class="filter-pills-row" id="categoryFilterPills" role="group" aria-label="Филтър по категория">
+              <button type="button" class="filter-pill active" data-category="all">Всички снимки</button>
+              <button type="button" class="filter-pill" data-category="family">Семейни снимки</button>
+              <button type="button" class="filter-pill" data-category="travel">Пътувания</button>
+              <button type="button" class="filter-pill" data-category="special">Специални моменти</button>
+              <button type="button" class="filter-pill" data-category="favorites">Любими спомени</button>
+              <button type="button" class="filter-pill" data-category="video">Видео спомени</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Информационен ред за активния филтър -->
+        <div class="gallery-status-bar">
+          <div class="active-filter-summary" id="activeFilterSummary">
+            Показване на: <strong>Всички снимки</strong>
+          </div>
+          <div class="gallery-status-actions">
+            <button type="button" class="reset-filters-btn hidden" id="resetFiltersBtn">
+              Изчисти филтрите ✕
+            </button>
+            <button type="button" class="btn-curator-toggle" id="inlineOpenAdminBtn">
+              ＋ Качи снимки в албума
+            </button>
+          </div>
+        </div>
+
+        <!-- Артистична 3D Галерия с всички приложени снимки (Приоритет 4) -->
+        <div class="artistic-gallery-grid" id="mainGalleryGrid" aria-live="polite">
+          <!-- Генерира се динамично от config.js -->
+        </div>
+
+        <!-- Красиво празно състояние за албуми без снимки (напр. 2024 или 2025, докато не се добавят) -->
+        <div class="empty-album-state hidden" id="emptyAlbumState">
+          <div class="empty-icon">✦</div>
+          <h3 class="empty-title">Тук скоро ще има нови спомени</h3>
+          <p class="empty-desc">
+            В тази комбинация от година и категория все още няма отбелязани кадри. Можете лесно да промените годината на всяка снимка в <code>config.js</code> или да разгледате останалите албуми.
+          </p>
+          <button type="button" class="btn-luxury-secondary" id="emptyStateResetBtn">
+            Покажи всички снимки
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         D. „НАШЕТО СЕМЕЙСТВО“ — Секция с избираеми семейни снимки
+         ======================================================================== -->
+    <section class="family-section story-chapter" id="our-family" data-chapter="family">
+      <div class="section-container">
+        <div class="section-header-split reveal-on-scroll">
+          <div>
+            <span class="section-eyebrow" id="familyTag" contenteditable="true" spellcheck="false" data-edit-key="familySection.sectionTag">
+              НАШЕТО СЕМЕЙСТВО
+            </span>
+            <h2 class="section-title" id="familyHeading" contenteditable="true" spellcheck="false" data-edit-key="familySection.heading">
+              Заедно във всеки миг
+            </h2>
+            <p class="section-subtitle" id="familySubtitle" contenteditable="true" spellcheck="false" data-edit-key="familySection.subtitle">
+              Споделените прегръдки, морският вятър, усмивките край масата и спокойствието да бъдем един до друг. Можете да избирате кои снимки да са част от семейната колекция с един клик.
+            </p>
+          </div>
+
+          <div class="family-curator-controls">
+            <button type="button" class="btn-curator-toggle" id="toggleFamilyCuratorBtn" aria-expanded="false">
+              <span>✎ Избери кои снимки са в „Нашето семейство“</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Панел за лесно избиране/премахване на семейни снимки без предположения -->
+        <div class="family-selector-drawer hidden" id="familySelectorDrawer">
+          <p class="selector-help">
+            Кликнете върху снимка по-долу, за да я включите или изключите от секция „Нашето семейство“ и албум „Семейни снимки“:
+          </p>
+          <div class="selector-thumbs-row" id="familySelectorThumbs"></div>
+        </div>
+
+        <!-- 3D Панорамна семейна витрина -->
+        <div class="family-showcase-grid" id="familyShowcaseGrid">
+          <!-- Генерира се динамично -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         E. „МОМЕНТИ В ДВИЖЕНИЕ“ — Кинематографично видео + Анимирана фотоистория
+         ======================================================================== -->
+    <section class="motion-section story-chapter" id="moments-motion" data-chapter="motion">
+      <div class="section-container">
+        <div class="section-header-center reveal-on-scroll">
+          <span class="section-eyebrow" id="motionTag" contenteditable="true" spellcheck="false" data-edit-key="motionSection.sectionTag">
+            МОМЕНТИ В ДВИЖЕНИЕ
+          </span>
+          <h2 class="section-title" id="motionHeading" contenteditable="true" spellcheck="false" data-edit-key="motionSection.heading">
+            Кинематографична фото и видео история
+          </h2>
+          <p class="section-subtitle" id="motionSubtitle" contenteditable="true" spellcheck="false" data-edit-key="motionSection.subtitle">
+            Плавно преливащи се кадри с многопластов паралакс и атмосферно видео.
+          </p>
+        </div>
+
+        <!-- Переключател между Анимирана Фотоистория от личните снимки и Наличното Атмосферно Видео -->
+        <div class="motion-mode-tabs reveal-on-scroll" role="tablist">
+          <button type="button" class="motion-tab active" data-motion-tab="photostory" role="tab" aria-selected="true">
+            ✦ Анимирана фотоистория (Лични кадри в движение)
+          </button>
+          <button type="button" class="motion-tab" data-motion-tab="videofilm" role="tab" aria-selected="false">
+            ▶ Атмосферен видео филм (MP4)
+          </button>
+        </div>
+
+        <!-- 1. Завършена Анимирана Фотоистория (Cinematic Pan/Zoom/Parallax със синхронизирани надписи) -->
+        <div class="cinema-stage-wrapper reveal-on-scroll" id="photoStoryStageWrap">
+          <div class="cinema-stage" id="cinemaPhotoStory">
+            <div class="cinema-parallax-bg" id="cinemaStoryBg"></div>
+
+            <div class="cinema-slide-viewport" id="cinemaSlideViewport">
+              <!-- Слайдовете се рендерират от JS с плавен Ken Burns pan/zoom -->
+            </div>
+
+            <div class="cinema-caption-overlay">
+              <span class="cinema-step-counter" id="cinemaStepCounter">01 / 08</span>
+              <h3 class="cinema-slide-title" id="cinemaSlideTitle">Нашите моменти</h3>
+              <p class="cinema-slide-desc" id="cinemaSlideDesc">Спомени, които оживяват пред очите ни.</p>
+            </div>
+
+            <div class="cinema-controls-bar">
+              <button type="button" class="cinema-ctrl-btn" id="cinemaPrevBtn" aria-label="Предишна сцена">←</button>
+              <button type="button" class="cinema-ctrl-btn" id="cinemaPlayPauseBtn" aria-label="Пауза или пускане">Пауза</button>
+              <button type="button" class="cinema-ctrl-btn" id="cinemaNextBtn" aria-label="Следваща сцена">→</button>
+              <div class="cinema-progress-track">
+                <div class="cinema-progress-fill" id="cinemaProgressFill"></div>
+              </div>
+            </div>
+          </div>
+          <p class="cinema-footnote">
+            * Анимирана фотоистория с плавно кинематографично движение от Вашите лични снимки. Можете да добавите реални MP4/WebM семейни видеа във файла <code>config.js</code>.
+          </p>
+        </div>
+
+        <!-- 2. Реален Видео Плейър за наличните MP4 файлове в проекта -->
+        <div class="video-film-wrapper hidden" id="videoFilmStageWrap">
+          <div class="video-player-card">
+            <video
+              id="dedicatedSectionVideo"
+              class="dedicated-video-el"
+              src="intro-film.mp4"
+              poster="intro-poster.jpg"
+              muted
+              loop
+              playsinline
+              controls
+            ></video>
+            <div class="video-card-info">
+              <h4>Средиземноморска светлина — Атмосферен филм</h4>
+              <p>Наличен реален MP4 видеофайл в проекта. За да добавите още лични видеоклипове, поставете ги в папката и ги опишете в <code>SITE_CONFIG.videos.memoryClips</code>.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         F. „ЛЮБИМИ МОМЕНТИ“ — Впечатляваща 3D композиция от снимки
+         ======================================================================== -->
+    <section class="favorites-section story-chapter" id="favorites" data-chapter="favorites">
+      <div class="section-container">
+        <div class="section-header-center reveal-on-scroll">
+          <span class="section-eyebrow" id="favTag" contenteditable="true" spellcheck="false" data-edit-key="favoritesSection.sectionTag">
+            ЛЮБИМИ МОМЕНТИ
+          </span>
+          <h2 class="section-title" id="favHeading" contenteditable="true" spellcheck="false" data-edit-key="favoritesSection.heading">
+            Избрани кадри от сърцето
+          </h2>
+          <p class="section-subtitle" id="favSubtitle" contenteditable="true" spellcheck="false" data-edit-key="favoritesSection.subtitle">
+            Специална 3D композиция от моментите, които винаги ни карат да се усмихваме.
+          </p>
+        </div>
+
+        <div class="favorites-3d-mosaic" id="favoritesMosaicGrid">
+          <!-- Генерира се динамично -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         G. ЕЛЕГАНТЕН ФИНАЛ — „Най-хубавото предстои“
+         ======================================================================== -->
+    <section class="finale-section story-chapter" id="finale" data-chapter="finale">
+      <div class="section-container">
+        <div class="finale-card reveal-on-scroll" data-tilt-card>
+          <span class="section-eyebrow" id="finaleTag" contenteditable="true" spellcheck="false" data-edit-key="finaleSection.sectionTag">
+            ЗАВИНАГИ ЗАЕДНО
+          </span>
+          <h2 class="finale-heading" id="finaleHeading" contenteditable="true" spellcheck="false" data-edit-key="finaleSection.heading">
+            Най-хубавото предстои
+          </h2>
+          <p class="finale-lead" id="finaleSubtitle" contenteditable="true" spellcheck="false" data-edit-key="finaleSection.subtitle">
+            Всяка следваща година е нова страница от нашия семеен албум — изпълнена с още повече любов, пътувания и незабравими спомени.
+          </p>
+
+          <div class="finale-actions">
+            <a href="#hero" class="btn-luxury-primary">
+              <span>Обратно към началото ↑</span>
+            </a>
+            <button type="button" class="btn-luxury-secondary" id="resetEditsBtn" title="Възстанови фабричните текстове от config.js">
+              <span>Възстанови стандартните текстове</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Футър -->
+  <footer class="site-footer">
+    <div class="section-container footer-inner">
+      <div class="footer-brand">LILY HOME • Семеен Албум</div>
+      <div class="footer-note">Създадено с любов • Всички 13 лични кадъра са включени</div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================
+       LIGHTBOX МОДАЛ НА ЦЯЛ ЕКРАН (С клавиатура, Escape, брояч, swipe и фокус)
+       ======================================================================== -->
+  <div
+    class="lightbox-modal hidden"
+    id="lightboxModal"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Преглед на снимка на цял екран"
+  >
+    <div class="lightbox-backdrop" id="lightboxBackdrop"></div>
+
+    <div class="lightbox-topbar">
+      <div class="lightbox-counter" id="lightboxCounter">1 / 13</div>
+      <div class="lightbox-top-actions">
+        <button
+          type="button"
+          class="lightbox-fav-toggle"
+          id="lightboxFavBtn"
+          aria-label="Отбележи като любима снимка"
+          title="Добави/премахни от Любими"
+        >
+          ♥ Любима
+        </button>
+        <button
+          type="button"
+          class="lightbox-close-btn"
+          id="lightboxCloseBtn"
+          aria-label="Затвори прегледа (Escape)"
+        >
+          <span>Затвори</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="lightbox-stage" id="lightboxSwipeArea">
+      <button
+        type="button"
+        class="lightbox-nav-btn prev"
+        id="lightboxPrevBtn"
+        aria-label="Предишна снимка"
+      >
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+      <figure class="lightbox-figure">
+        <div class="lightbox-img-container">
+          <img src="" alt="" id="lightboxImg" class="lightbox-img" />
+        </div>
+        <figcaption class="lightbox-caption-box">
+          <span class="lightbox-meta-badge" id="lightboxDateBadge">2026</span>
+          <h3 class="lightbox-title" id="lightboxTitle">Заглавие</h3>
+          <p class="lightbox-desc" id="lightboxDesc">Описание</p>
+        </figcaption>
+      </figure>
+
+      <button
+        type="button"
+        class="lightbox-nav-btn next"
+        id="lightboxNextBtn"
+        aria-label="Следваща снимка"
+      >
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       ЕЛЕМЕНТАРЕН АДМИН ПАНЕЛ ЗА СЪПРУГАТА ВИ (Лесно качване в албумите)
+       ======================================================================== -->
+  <div
+    class="admin-modal hidden"
+    id="adminModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="adminModalTitle"
+  >
+    <div class="admin-backdrop" id="adminBackdrop"></div>
+
+    <div class="admin-panel-window">
+      <!-- Горна лента на Админ Панела -->
+      <div class="admin-panel-header">
+        <div>
+          <span class="admin-badge">LILY HOME • АДМИН ПАНЕЛ</span>
+          <h2 class="admin-title" id="adminModalTitle">Добавяне на снимки в албумите</h2>
+        </div>
+        <button type="button" class="admin-close-btn" id="closeAdminModalBtn" aria-label="Затвори админ панела">
+          <span>Затвори</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="admin-panel-body">
+        <!-- СТЪПКА 1: Избор на снимки от телефона или компютъра -->
+        <div class="admin-step-card">
+          <div class="step-label-row">
+            <span class="step-circle">1</span>
+            <span class="step-title-text">Избери една или няколко снимки от устройството си</span>
+          </div>
+
+          <label for="adminFileInput" class="upload-dropzone" id="uploadDropzone">
+            <input
+              type="file"
+              id="adminFileInput"
+              accept="image/*"
+              multiple
+              class="sr-only-input"
+            />
+            <div class="dropzone-icon">📸</div>
+            <div class="dropzone-main-text">Кликни тук или провлачи снимки</div>
+            <div class="dropzone-sub-text">Можеш да избереш няколко снимки едновременно (JPG, PNG, WEBP)</div>
+          </label>
+
+          <!-- Преглед на избраните снимки и клик за фокус върху лицето -->
+          <div class="upload-previews-wrap hidden" id="uploadPreviewsWrap">
+            <div class="previews-header">
+              <span id="selectedFilesCount">Избрани: 0 снимки</span>
+              <span class="focal-tip">💡 Кликни върху лицето на снимката, за да центрираш изрязването</span>
+            </div>
+            <div class="upload-previews-grid" id="uploadPreviewsGrid"></div>
+          </div>
+        </div>
+
+        <!-- СТЪПКА 2: Избор на Година и Албуми (с големи бутони) -->
+        <div class="admin-step-card">
+          <div class="step-label-row">
+            <span class="step-circle">2</span>
+            <span class="step-title-text">В кой албум и коя година да се показват?</span>
+          </div>
+
+          <div class="admin-form-grid">
+            <!-- Избор на година -->
+            <div class="admin-field-group">
+              <label class="admin-label">Година на снимките:</label>
+              <div class="admin-Segment-row" id="adminYearChips">
+                <button type="button" class="admin-chip active" data-admin-year="2026">2026 г.</button>
+                <button type="button" class="admin-chip" data-admin-year="2025">2025 г.</button>
+                <button type="button" class="admin-chip" data-admin-year="2024">2024 г.</button>
+                <button type="button" class="admin-chip" data-admin-year="unspecified">Без посочена година</button>
+              </div>
+            </div>
+
+            <!-- Избор на категории / албуми (може няколко едновременно) -->
+            <div class="admin-field-group">
+              <label class="admin-label">Албуми (може да избереш повече от един):</label>
+              <div class="admin-Segment-row" id="adminCategoryChips">
+                <button type="button" class="admin-cat-chip active" data-admin-cat="family">👨‍👩‍👧 Семейни снимки</button>
+                <button type="button" class="admin-cat-chip" data-admin-cat="travel">🌊 Пътувания</button>
+                <button type="button" class="admin-cat-chip active" data-admin-cat="special">✨ Специални моменти</button>
+                <button type="button" class="admin-cat-chip active" data-admin-cat="favorites">♥ Любими спомени</button>
+                <button type="button" class="admin-cat-chip" data-admin-cat="video">🎬 Моменти в движение</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- По желание: Заглавие и кратък текст -->
+          <div class="admin-inputs-row">
+            <div class="admin-input-col">
+              <label for="adminPhotoTitle" class="admin-label">Заглавие (по желание):</label>
+              <input
+                type="text"
+                id="adminPhotoTitle"
+                class="admin-text-input"
+                placeholder="Напр. Лятна вечер край морето"
+              />
+            </div>
+            <div class="admin-input-col">
+              <label for="adminPhotoCaption" class="admin-label">Кратък спомен / описание (по желание):</label>
+              <input
+                type="text"
+                id="adminPhotoCaption"
+                class="admin-text-input"
+                placeholder="Напр. Един незабравим момент заедно..."
+              />
+            </div>
+          </div>
+
+          <!-- Голям бутон за запазване -->
+          <div class="admin-submit-row">
+            <button type="button" class="btn-admin-save" id="adminSaveUploadBtn" disabled>
+              <span>✦ Запази снимките в сайта</span>
+            </button>
+            <span class="admin-status-msg" id="adminStatusMsg"></span>
+          </div>
+        </div>
+
+        <!-- СТЪПКА 3: Списък с всички снимки в сайта (за бързо премахване при нужда) -->
+        <div class="admin-step-card">
+          <div class="step-label-row">
+            <span class="step-circle">3</span>
+            <span class="step-title-text">Управление на качените снимки в галерията</span>
+          </div>
+          <div class="admin-existing-list" id="adminExistingList">
+            <!-- Генерира се динамично -->
+          </div>
+        </div>
+
+        <!-- Опционална настройка за синхронизация през интернет (GitHub Cloud), когато сте в различни градове -->
+        <details class="admin-cloud-details">
+          <summary>☁️ Синхронизация между устройства през интернет (GitHub ключ — по желание)</summary>
+          <div class="admin-cloud-body">
+            <p class="admin-cloud-help">
+              В локален режим снимките се записват автоматично. Онлайн в GitHub Pages те се запазват веднага в браузъра, а ако въведете GitHub Personal Access Token (с право <code>repo</code> или <code>Contents: Read & Write</code>), всяка качена от съпругата Ви снимка от друг град ще се записва директно в общия Ви сайт за всички устройства!
+            </p>
+            <div class="admin-cloud-row">
+              <input
+                type="password"
+                id="ghTokenInput"
+                class="admin-text-input"
+                placeholder="Постави GitHub Token (ghp_... или github_pat_...)"
+              />
+              <button type="button" class="admin-chip active" id="saveGhTokenBtn">Запази ключ</button>
+            </div>
+            <span class="admin-status-msg" id="ghTokenStatus"></span>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <!-- Скриптове -->
+  <script src="config.js?v=5"></script>
+  <script src="script.js?v=5"></script>
+</body>
+</html>
